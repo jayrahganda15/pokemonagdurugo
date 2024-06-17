@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hi Baby</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>What's on your mind?</h1>
+    <form id="postForm">
+      <textarea id="postContent" placeholder="What's on your mind?" maxlength="1000"></textarea>
+      <button type="submit">Post</button>
+    </form>
+    <div id="posts"></div>
+  </div>
+  <div class="footer">
+    <p id="time"></p>
+  </div>
+  <script>
+    const postForm = document.getElementById('postForm');
+    const postContent = document.getElementById('postContent');
+    const postsDiv = document.getElementById('posts');
+    const timeDiv = document.getElementById('time');
+
+    postForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const content = postContent.value.trim();
+      if (content) {
+        await fetch('/api/posts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ content }),
+        });
+        postContent.value = '';
+        loadPosts();
+      }
+    });
+
+    async function loadPosts() {
+      const response = await fetch('/api/posts');
+      const posts = await response.json();
+      postsDiv.innerHTML = posts.map(post => `<div class="post"><p>${post.content}</p><small>${post.timestamp}</small></div>`).join('');
+    }
+
+    function updateTime() {
+      const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' });
+      timeDiv.textContent = `Current Time (Manila): ${now}`;
+    }
+
+    loadPosts();
+    updateTime();
+    setInterval(updateTime, 1000);
+  </script>
+</body>
+</html>
